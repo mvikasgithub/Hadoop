@@ -1,0 +1,80 @@
+Queries
+1. List all the columns of the Salespeople table.
+Query: select * from salespeople;
+2. List all customers with a rating of 100.
+Query: select * from customer where rating=100;
+3. Find all records in the Customer table with NULL values in the city column.
+Query:select * from customer where city=NULL;
+4. Find the largest order taken by each salesperson on each date.
+Query: select cnum,odate,max(amt) from orders group by cnum, odate;
+5. Arrange the Orders table by descending customer number.
+Query: select * from orders order by cnum desc;
+6. Find which salespeople currently have orders in the Orders table.
+Query:  select distinct(t1.snum) from customer t1, orders t2 where t1.cnum=t2.cnum;
+7. List names of all customers matched with the salespeople serving them.
+Query: select t1.sname, t2.cname from salespeople t1, customer t2 where t1.snum = t2.snum;
+8. Find the names and numbers of all salespeople who had more than one customer.
+Query: select t1.snum, count(*) from salespeople t1 , customer t2 where t1.snum = t2.snum group by t1.snum;
+9. Count the orders of each of the salespeople and output the results in descending order.
+Query: select t3.snum, count(*) as sales_count from orders t1, customer t2, salespeople t3 where t1.cnum = t2.cnum and t2.snum = t3.snum group by t3.snum order by sales_count desc;
+10. List the Customer table if and only if one or more of the customers in the Customer table are located in San Jose.
+Query: select * from customer where (select count(*) from customer where city = 'San Jose') > 1;
+11. Match salespeople to customers according to what city they lived in.
+Query: select t1.cname, t1.city , t2.sname from customer t1, salespeople t2 where t1.snum = t2.snum and t1.city = t2.city;
+12. Find the largest order taken by each salesperson.
+Query: select t1.snum,t1.sname, max(t2.amt) from salespeople t1, orders t2, customer t3 where t2.cnum = t3.cnum and t1.snum = t3.snum group by t1.sname;
+13. Find customers in San Jose who have a rating above 200.
+Query: select cname from customer where city='San Jose' and rating > 200;
+14. List the names and commissions of all salespeople in London.
+Query: select sname, comm, city from salespeople where city='London';
+15. List all the orders of salesperson Motika from the Orders table
+Query: select t1.onum, t1.amt, t1.odate, t1.cnum, t3.sname from orders t1, customer t2, salespeople t3 where t2.cnum = t1.cnum and t2.snum = t3.snum and t3.sname = 'Motika';
+16. Find all customers with orders on October 3.
+Query: select distinct(t1.cname) from customer t1, orders t2 where t2.odate like '____-03-__' and t1.cnum = t2.cnum;
+17. Give the sums of the amounts from the Orders table, grouped by date, eliminating all those dates where the SUM was not at least 2000.00 above the MAX amount.
+Query: select odate, sum(amt) from orders group by odate;****
+18. Select all orders that had amounts that were greater than at least one of the orders from October 6
+Query: select * from orders where amt>(select min(amt) from orders where odate='1996-06-10');
+19. Write a query that uses the EXISTS operator to extract all salespeople who have customers with a rating of 300.
+Query: select sname,snum from salespeople where exists(select rating from customer where rating=300);
+20. Find all pairs of customers having the same rating.
+Query: select distinct(t1.cname) from customer t1, customer t2 where t1.rating = t2.rating and t1.cname <> t2.cname;
+21. Find all customers whose CNUM is 1000 above the SNUM of Serres.
+Query: select cnum from customer where cnum > (select snum + 1000 from salespeople where sname = 'serres');
+22. Give the salespeople’s commissions as percentages instead of decimal numbers.
+Query: select concat(round(comm * 100), '%') as comm from salespeople;
+23. Find the largest order taken by each salesperson on each date, eliminating those MAX orders which are less than $3000.00 in value.
+Query: select a.sname, c.odate, max(c.amt) from salespeople a, customer b, orders c where a.snum=b.snum and b.cnum= c.cnum group by c.odate having max(c.amt) > 3000;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
