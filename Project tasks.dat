@@ -1,0 +1,48 @@
+Job 1 : Educational Analysis
+--------------------------------------------------
+Task 1 : Calculate :
+a. Education Qualification Count : Sub-grouped by Gender
+Hive Solution: select education,gender, count(*) from census group by education, gender;
+
+b. Education Qualification Count based on Employment
+Hive Solution: select education,weeksworked, count(*) from census group by education, weeksworked;
+
+c. Calculate Sex Ratio (Male : Female)
+Hive Solution: select gender, count(*) from census group by gender;
+=========================================================
+Job 2 : Financial Analysis
+---------------------------------------------
+Task 1 : Calculate :
+a. Tax based Income Generated
+Hive Solution: select taxfilerstatus, sum(income) from census group by taxfilerstatus;
+i. Total Income Generated , Gender wise Total Income Generated 
+Hive Solution: select sum(income) from census;
+Hive Solution: select gender, sum(income) from census group by gender;
+ii. Total Tax Payers
+Hive Solution: select count(taxfilerstatus) from census where taxfilerstatus not like "%Nonfiler%";
+iii. Total Tax to be collected
+b. Per Capita Income Analysis
+i. Per Capita Income
+Hive Solution: select sum(income) / count(*) from census;
+ii. Age Group wise Per Capita Income
+iii. Gender wise Per Capita Income
+==========================================================
+Job 3 : Social Analysis
+Task 1 : Calculate :
+a. Pension Amount to be added after x years
+
+b. No. of Orphans for each category based on Parents Present
+c. No. of Employable Female Citizens who are Widows or Divorced
+Hive solution: select education, count(*) from census where gender like '%Female%' and (maritalstatus like '%Divorced%' or maritalstatus like '%Widowed%')group by education;
+
+===============================================================
+Job 4 : Planning Analysis
+Task 1 : Calculate :
+a. No. of Voters to get added in next X years
+Hive solution: select count(*) from census where age+3 > 18;
+b. No. of Senior Citizen to get added in next X years
+Hive solution: select count(*) from census where age+3 > 65;
+c. Sex Ratio
+Hive Solution: select gender, count(*) from census group by gender;
+d. Citizen vs. Immigrants Ratio for all Employed
+Hive Solution: select weeksworked, citizenship, count(*) from census where citizenship like '%Native%' or citizenship like '%naturalization%' group by weeksworked, citizenship;
