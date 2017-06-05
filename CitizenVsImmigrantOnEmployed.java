@@ -3,7 +3,9 @@ import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.*;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -12,15 +14,20 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 
-public class GenderRatio 
+//Citizen vs. Immigrants Ratio for all Employed
+
+public class CitizenVsImmigrantOnEmployed 
 {
 	public static class MyMapper extends Mapper<LongWritable, Text, Text, Text>
 	{
 		public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException
 		{
 			String[] arr = value.toString().split(",");
-					
-			context.write(new Text(""), new Text(arr[3])); //gender  gender
+				
+			String weeksWorked = arr[9];
+			
+			if(weeksWorked != "0")
+				context.write(new Text(weeksWorked), new Text(arr[8]));
 		}
 	}
 	
@@ -28,20 +35,20 @@ public class GenderRatio
 	{
 		public void reduce(Text key, Iterable<Text> value, Context context) throws IOException, InterruptedException
 		{
-			int mcount = 0, fcount= 0;
+			int ccount= 0, ncount = 0; //citizencount - noncitizencount
+			
 			for(Text i: value)
 			{
-				if(i.toString().trim().equalsIgnoreCase("male"))
-					mcount++;
+				if(i.toString().trim().contains("Native") || i.toString().trim().contains("naturalization"))
+					ccount++;
 				else
-					fcount++;
-			}
-			String out = "Male=" + mcount + " , " + "Female=" + fcount;
-			context.write(new Text("Results"), new Text(out));
-		}
-	}
-	
+					ncount++;			}
 
+			String out = String.valueOf(ccount) + " : " + String.valueOf(ncount);
+			context.write(new Text(key), new Text(out));
+		}
+	}	
+	
 	/**
 	 * @param args
 	 * @throws IOException 
@@ -53,8 +60,8 @@ public class GenderRatio
 		// TODO Auto-generated method stub
 		
 		Configuration cfg = new Configuration();
-		Job job = Job.getInstance(cfg, "GenderRatio");
-		job.setJarByClass(GenderRatio.class);
+		Job job = Job.getInstance(cfg, "CitizenVsImmigrationOnEmployed");
+		job.setJarByClass(CitizenVsImmigrantOnEmployed.class);
 		job.setMapperClass(MyMapper.class);
 		job.setReducerClass(MyReducer.class);
 		
@@ -64,8 +71,7 @@ public class GenderRatio
 		FileInputFormat.addInputPath(job, new Path(args[0]));
 		FileSystem.get(cfg).delete(new Path(args[1]), true);
 		FileOutputFormat.setOutputPath(job, new Path(args[1]));
-		System.exit(job.waitForCompletion(true) ? 0 : 1);
-		
+		System.exit(job.waitForCompletion(true) ? 0 : 1);		
 
 	}
 

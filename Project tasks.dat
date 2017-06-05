@@ -3,46 +3,142 @@ Job 1 : Educational Analysis
 Task 1 : Calculate :
 a. Education Qualification Count : Sub-grouped by Gender
 Hive Solution: select education,gender, count(*) from census group by education, gender;
+Hive Output: In file:
+
+Pig Solution: 
+bag1 = load '/home/hduser/census.txt' using PigStorage(',') as (age:int, education:chararray, maritalstatus:chararray, gender:chararray, taxfilerstatus:chararray, income:float, parents:chararray, countryofbirth:chararray, citizenship:chararray, weeksworked:int);
+bag2 = foreach bag1 generate education, gender;
+bag3 = group bag2 by (education, gender);
+bag4 = foreach bag3 generate group, COUNT(bag2.education);
+store bag4 into 'education_gender_count'
+Pig Output: In file:
 
 b. Education Qualification Count based on Employment
+
 Hive Solution: select education,weeksworked, count(*) from census group by education, weeksworked;
+
+Pig Solution:
+
+bag1 = load '/home/hduser/census.txt' using PigStorage(',') as (age:int, education:chararray, maritalstatus:chararray, gender:chararray, taxfilerstatus:chararray, income:float, parents:chararray, countryofbirth:chararray, citizenship:chararray, weeksworked:int);
+bag2 = foreach bag1 generate education, weeksworked;
+bag3 = group bag2 by (education, weeksworked);
+bag4 = foreach bag3 generate group, COUNT(bag2.education);
+store bag4 into 'education_employment_count'
+
 
 c. Calculate Sex Ratio (Male : Female)
 Hive Solution: select gender, count(*) from census group by gender;
+
+Pig Solution:
+
+bag1 = load '/home/hduser/census.txt' using PigStorage(',') as (age:int, education:chararray, maritalstatus:chararray, gender:chararray, taxfilerstatus:chararray, income:float, parents:chararray, countryofbirth:chararray, citizenship:chararray, weeksworked:int);
+bag2 = foreach bag1 generate gender;
+bag3 = group bag2 by gender;
+bag4 = foreach bag3 generate group, COUNT(bag2.gender);
+store bag4 into 'pig_output1';
+
 =========================================================
 Job 2 : Financial Analysis
 ---------------------------------------------
 Task 1 : Calculate :
-a. Tax based Income Generated
-Hive Solution: select taxfilerstatus, sum(income) from census group by taxfilerstatus;
+a. Total Income of different types of Tax Payers
+
+Hive Solution: select taxfilerstatus, sum(income) from census where taxfilerstatus not like '%Nonfiler%' group by taxfilerstatus;
+
+Pig Solution:
+
+bag1 = load '/home/hduser/census.txt' using PigStorage(',') as (age:int, education:chararray, maritalstatus:chararray, gender:chararray, taxfilerstatus:chararray, income:float, parents:chararray, countryofbirth:chararray, citizenship:chararray, weeksworked:int);
+bag2 = foreach bag1 generate taxfilerstatus, income;
+bag3 = filter bag2 by taxfilerstatus != ' Nonfiler';
+bag4 = group bag3 by taxfilerstatus;
+bag5 = foreach bag4 generate group, SUM(bag3.income);
+store bag5 into 'pig_output1'
+
+
 i. Total Income Generated , Gender wise Total Income Generated 
+
 Hive Solution: select sum(income) from census;
+
 Hive Solution: select gender, sum(income) from census group by gender;
+
+Pig Solution:
+
+bag1 = load '/home/hduser/census.txt' using PigStorage(',') as (age:int, education:chararray, maritalstatus:chararray, gender:chararray, taxfilerstatus:chararray, income:float, parents:chararray, countryofbirth:chararray, citizenship:chararray, weeksworked:int);bag2 = foreach bag1 generate income, gender;
+bag3 = group bag2 by gender;
+bag4 = foreach bag3 generate group, SUM(bag2.income);
+store bag4 into 'pig_output';
+
+
 ii. Total Tax Payers
 Hive Solution: select count(taxfilerstatus) from census where taxfilerstatus not like "%Nonfiler%";
+
+Pig Solution:
+bag1 = load '/home/hduser/census.txt' using PigStorage(',') as (age:int, education:chararray, maritalstatus:chararray, gender:chararray, taxfilerstatus:chararray, income:float, parents:chararray, countryofbirth:chararray, citizenship:chararray, weeksworked:int);
+bag2 = foreach bag1 generate taxfilerstatus;
+bag3 = filter bag2 by taxfilerstatus != ' Nonfiler';
+bag4 = group bag3 by taxfilerstatus;
+bag5 = foreach bag4 generate group, COUNT(bag3.taxfilerstatus);
+
+
 iii. Total Tax to be collected
+
+
 b. Per Capita Income Analysis
 i. Per Capita Income
+
 Hive Solution: select sum(income) / count(*) from census;
+
 ii. Age Group wise Per Capita Income
+
 iii. Gender wise Per Capita Income
+Hive Solution: select gender, sum(income) from census group by gender;
 ==========================================================
 Job 3 : Social Analysis
 Task 1 : Calculate :
 a. Pension Amount to be added after x years
 
+Hive Solution: select count(*)*500 from census where age+4 > 60 and age < 60;
+
 b. No. of Orphans for each category based on Parents Present
+
+Hive Solution: select parents, Count(*) from census where parents not like '%Both parents present%' group by parents;
+
+Pig Solution:
+bag1 = load '/home/hduser/census.txt' using PigStorage(',') as (age:int, education:chararray, maritalstatus:chararray, gender:chararray, taxfilerstatus:chararray, income:float, parents:chararray, countryofbirth:chararray, citizenship:chararray, weeksworked:int);
+bag2 = foreach bag1 generate parents;
+bag3 = filter bag2 by parents != ' Both parents present';
+bag4 = group bag3 by parents;
+bag5 = foreach bag4 generate group, COUNT(bag3.parents);
+14   store  bag5 into 'pig_output'
+
+
 c. No. of Employable Female Citizens who are Widows or Divorced
-Hive solution: select education, count(*) from census where gender like '%Female%' and (maritalstatus like '%Divorced%' or maritalstatus like '%Widowed%')group by education;
+Hive solution: select count(*) from census where gender like '%Female%' and (maritalstatus like '%Divorced%' or maritalstatus like '%Widowed%') and weeksworked > 0;
 
 ===============================================================
 Job 4 : Planning Analysis
 Task 1 : Calculate :
 a. No. of Voters to get added in next X years
-Hive solution: select count(*) from census where age+3 > 18;
+
+Hive solution: select count(*) from census where age+3 > 18 and age < 18;
+
+
 b. No. of Senior Citizen to get added in next X years
-Hive solution: select count(*) from census where age+3 > 65;
+
+Hive solution: select count(*) from census where age+4 > 60 and age < 60;
+
 c. Sex Ratio
 Hive Solution: select gender, count(*) from census group by gender;
+
+
 d. Citizen vs. Immigrants Ratio for all Employed
-Hive Solution: select weeksworked, citizenship, count(*) from census where citizenship like '%Native%' or citizenship like '%naturalization%' group by weeksworked, citizenship;
+
+Hive Solution: select weeksworked, citizenship, count(*) from census group by weeksworked, citizenship;
+
+Pig Solution:
+bag1 = load '/home/hduser/census.txt' using PigStorage(',') as (age:int, education:chararray, maritalstatus:chararray, gender:chararray, taxfilerstatus:chararray, income:float, parents:chararray, countryofbirth:chararray, citizenship:chararray, weeksworked:int);
+bag2 = foreach bag1 generate citizenship, weeksworked;
+bag3 = group bag2 by (citizenship, weeksworked);
+bag4 = foreach bag3 generate group, COUNT(bag2.weeksworked);
+store bag4 into 'pig_output'
+

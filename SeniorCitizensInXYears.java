@@ -30,10 +30,12 @@ public class SeniorCitizensInXYears
 	{
 		public void reduce(Text key,Iterable<IntWritable> value,Context con) throws IOException, InterruptedException
 		{
+			String strYearsToAdd=con.getConfiguration().get("year");
+			int yearsToAdd=Integer.parseInt(strYearsToAdd);			
 			int count=0;
 			for(IntWritable a:value)
 			{			 
-				if(a.get()>60)
+				if(a.get()>60 && a.get() - yearsToAdd < 60)
 				{
 					count++;	
 				}
